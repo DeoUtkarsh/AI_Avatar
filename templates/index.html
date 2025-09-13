@@ -1,0 +1,448 @@
+<!-- OPTIMIZED index.html with Better UX and Progress Indicators -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Avatar - Fast Video Generation</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+            margin: 0; 
+            background: linear-gradient(135deg, #0b1020 0%, #1a1b3c 100%); 
+            color: #e6e9ef; 
+            min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+        .card { 
+            background: linear-gradient(145deg, #11162a, #1a1f35); 
+            border: 1px solid #2a3355; 
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+        }
+        h1 { 
+            font-size: 28px; 
+            margin: 0 0 20px; 
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        .settings-panel {
+            background: #0f1425;
+            border: 1px solid #1f2744;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .settings-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #a78bfa;
+            margin-bottom: 12px;
+        }
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .setting-item input[type="checkbox"] {
+            accent-color: #3b82f6;
+        }
+        .row { display: flex; gap: 16px; align-items: stretch; }
+        .row > * { flex: 1; }
+        .btn { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+            border: none; 
+            padding: 12px 18px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .btn[disabled] { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            transform: none;
+            background: #374151;
+        }
+        .btn.secondary { 
+            background: linear-gradient(135deg, #374151, #1f2937); 
+        }
+        .btn.secondary:hover { 
+            background: linear-gradient(135deg, #4b5563, #374151); 
+        }
+        .status { 
+            font-size: 12px; 
+            color: #9aa4b2; 
+            margin-top: 8px; 
+            min-height: 20px; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .progress-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .progress-bar {
+            width: 100px;
+            height: 4px;
+            background: #1f2744;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        textarea, input[type="text"] { 
+            width: 100%; 
+            box-sizing: border-box; 
+            background: #0e1428; 
+            color: #e6e9ef; 
+            border: 1px solid #263153; 
+            border-radius: 10px; 
+            padding: 12px; 
+            resize: vertical; 
+            min-height: 80px;
+            transition: border-color 0.2s ease;
+        }
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        .bubble { 
+            background: linear-gradient(145deg, #0c162d, #1a1f35); 
+            border: 1px solid #2a3355; 
+            border-radius: 12px; 
+            padding: 16px; 
+            white-space: pre-wrap; 
+            min-height: 60px;
+        }
+        .label { 
+            font-size: 13px; 
+            color: #a3adc2; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+        }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .bad { color: #f87171; }
+        .good { color: #34d399; }
+        .processing { color: #fbbf24; }
+        
+        #mediaPlayerContainer { 
+            margin-top: 16px; 
+            background: #000; 
+            border-radius: 12px; 
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            min-height: 50px; /* Give it some height so it doesn't collapse */
+        }
+        #mediaPlayerContainer video, #mediaPlayerContainer audio { 
+            width: 100%; 
+            display: block; 
+        }
+        
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .stat-item { display: flex; align-items: center; gap: 4px; }
+        
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .row { flex-direction: column; }
+            h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🤖 AI Avatar - Optimized</h1>
+            
+            <div class="settings-panel">
+                <div class="settings-title">⚡ Performance Settings</div>
+                <div class="setting-item">
+                    <input type="checkbox" id="autoPlay" checked> 
+                    <label for="autoPlay">Auto-play responses</label>
+                </div>
+                <div class="setting-item">
+                    <input type="checkbox" id="showStats" checked> 
+                    <label for="showStats">Show processing statistics</label>
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div>
+                    <div class="label">💬 Your Message</div>
+                    <textarea id="transcript" placeholder="Click 'Start Talking' or type your message here..."></textarea>
+                    <div class="status" id="sttStatus">
+                        <span>Ready to listen</span>
+                        <div class="progress-indicator" id="sttProgress">
+                            <div class="progress-bar"><div class="progress-fill"></div></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <button class="btn" id="startBtn">🎤 Start Talking</button>
+                        <button class="btn secondary" id="stopBtn" disabled>⏹ Stop</button>
+                        <button class="btn" id="sendBtn">➤ Send Message</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="label">🤖 AI Response</div>
+                    <div id="response" class="bubble">Ready to chat! Ask me anything.</div>
+                    <div class="status" id="apiStatus">
+                        <span>Waiting for your message...</span>
+                        <div class="progress-indicator" id="apiProgress">
+                            <div class="progress-bar"><div class="progress-fill"></div></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats" id="performanceStats" style="display: none;">
+                        <div class="stat-item"><span>⏱️</span><span id="totalTime">0s</span></div>
+                        <div class="stat-item"><span>🧠</span><span id="aiTime">0s</span></div>
+                        <div class="stat-item"><span>🎬</span><span id="videoTime">0s</span></div>
+                    </div>
+                    
+                    <div id="mediaPlayerContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const transcriptEl = document.getElementById('transcript');
+        const responseEl = document.getElementById('response');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const sttStatus = document.getElementById('sttStatus');
+        const apiStatus = document.getElementById('apiStatus');
+        const mediaPlayerContainer = document.getElementById('mediaPlayerContainer');
+        const performanceStats = document.getElementById('performanceStats');
+        const sttProgress = document.getElementById('sttProgress');
+        const apiProgress = document.getElementById('apiProgress');
+        const autoPlayCheck = document.getElementById('autoPlay');
+        const showStatsCheck = document.getElementById('showStats');
+        
+        let recognition = null;
+        let recognizing = false;
+
+        // Status Functions (unchanged)
+        function setSttStatus(text, type = 'normal') {
+            const statusSpan = sttStatus.querySelector('span');
+            statusSpan.textContent = text;
+            sttStatus.className = `status ${type}`;
+            sttProgress.style.display = (type === 'processing') ? 'flex' : 'none';
+        }
+
+        function setApiStatus(text, type = 'normal') {
+            const statusSpan = apiStatus.querySelector('span');
+            statusSpan.textContent = text;
+            apiStatus.className = `status ${type}`;
+            apiProgress.style.display = (type === 'processing') ? 'flex' : 'none';
+        }
+
+        function updatePerformanceStats(data) {
+            if (showStatsCheck.checked && data.processing_time) {
+                document.getElementById('totalTime').textContent = `${data.processing_time}s`;
+                performanceStats.style.display = 'flex';
+            }
+        }
+        
+        // Audio Fallback Function (unchanged, but now used first)
+        function playAudioFallback(audioUrl) {
+            mediaPlayerContainer.innerHTML = '';
+            const audio = document.createElement('audio');
+            audio.src = audioUrl;
+            audio.controls = true;
+            audio.autoplay = autoPlayCheck.checked;
+            audio.onplay = () => setApiStatus('Playing audio response', 'good');
+            audio.onended = () => setApiStatus('Audio finished', 'good');
+            audio.onerror = () => setApiStatus('Audio playback error', 'bad');
+            mediaPlayerContainer.appendChild(audio);
+        }
+
+        // --- START OF MODIFIED FUNCTION ---
+        async function sendTranscript(clearAfter = false) {
+            const text = transcriptEl.value.trim();
+            if (!text) {
+                setApiStatus('Please enter a message or use voice input', 'bad');
+                return;
+            }
+            
+            const startTime = Date.now();
+            setApiStatus('Processing your message...', 'processing');
+            responseEl.textContent = 'AI is thinking...';
+            mediaPlayerContainer.innerHTML = ''; // Clear previous media
+            
+            sendBtn.disabled = true;
+            sendBtn.textContent = '⏳ Processing...';
+            
+            try {
+                const res = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript: text })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `HTTP ${res.status}`);
+                }
+                
+                const data = await res.json();
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                
+                responseEl.textContent = data.response || '(no response received)';
+                
+                // --- NEW LOGIC: PLAY AUDIO FIRST, THEN LOAD VIDEO ---
+
+                // 1. Play audio immediately if it exists
+                if (data.audio_url) {
+                    setApiStatus('Playing audio...', 'good');
+                    playAudioFallback(data.audio_url); // Re-use your audio function
+                } else {
+                    setApiStatus('Response received (no media)', 'good');
+                }
+
+                // 2. If a video URL also exists, load it in the background and swap it in
+                if (data.video_url) {
+                    setApiStatus('Audio playing... video is generating in the background.', 'processing');
+                    
+                    const video = document.createElement('video');
+                    video.src = data.video_url;
+                    video.controls = true;
+                    video.autoplay = autoPlayCheck.checked;
+                    video.style.width = '100%';
+
+                    // When the video is ready to play, replace the audio player with it
+                    video.oncanplaythrough = () => {
+                        mediaPlayerContainer.innerHTML = ''; // Clear the audio player
+                        mediaPlayerContainer.appendChild(video);
+                        setApiStatus('Video finished generating and is now playing.', 'good');
+                        if (autoPlayCheck.checked) video.play();
+                    };
+
+                    video.onerror = () => {
+                        setApiStatus('Video failed to load, audio will continue.', 'bad');
+                    };
+                }
+                
+                // --- END OF NEW LOGIC ---
+                
+                if (showStatsCheck.checked) {
+                    updatePerformanceStats({ processing_time: totalTime, ...data });
+                }
+                if (clearAfter) transcriptEl.value = '';
+
+            } catch (e) {
+                responseEl.textContent = 'Sorry, I encountered an error. Please try again.';
+                setApiStatus(`Error: ${e.message}`, 'bad');
+                console.error('API Error:', e);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '➤ Send Message';
+            }
+        }
+        // --- END OF MODIFIED FUNCTION ---
+
+        // Speech Recognition (unchanged)
+        function initRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return null;
+            
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+            rec.interimResults = true;
+            rec.continuous = true;
+
+            rec.onstart = () => {
+                recognizing = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                setSttStatus('Listening... speak now!', 'processing');
+            };
+
+            rec.onend = () => {
+                recognizing = false;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                setSttStatus('Stopped listening', 'normal');
+            };
+            
+            rec.onerror = (e) => {
+                setSttStatus(`Microphone error: ${e.error || 'unknown'}`, 'bad');
+                recognizing = false;
+            };
+
+            rec.onresult = (event) => {
+                let interim = '';
+                let final = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        final += event.results[i][0].transcript;
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                transcriptEl.value = final + interim;
+            };
+            return rec;
+        }
+
+        // Event Listeners (unchanged)
+        startBtn.addEventListener('click', () => {
+            if (!('webkitSpeechRecognition' in window)) {
+                setSttStatus('Speech recognition not supported in this browser', 'bad');
+                return;
+            }
+            if (!recognition) recognition = initRecognition();
+            if (recognition) recognition.start();
+        });
+
+        stopBtn.addEventListener('click', () => { 
+            if (recognition && recognizing) recognition.stop(); 
+        });
+
+        sendBtn.addEventListener('click', () => sendTranscript(false));
+        
+        transcriptEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                sendTranscript(false);
+            }
+        });
+
+        // Initial check (unchanged)
+        fetch('/status')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.avatar_available) {
+                    setApiStatus('Avatar image missing - audio-only mode', 'bad');
+                }
+            });
+    </script>
+</body>
+</html>
