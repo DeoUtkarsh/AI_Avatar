@@ -4,7 +4,8 @@ __pycache__/
 *.pyo
 *.pyd
 
-
+# Ignore generated audio files
+static/*.mp3
 
 # Ignore virtual environment (if you have one)
 venv/
